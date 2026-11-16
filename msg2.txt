@@ -1,0 +1,39 @@
+Hi everyone, start implementation now using the tutorial you reviewed:
+https://github.com/kenken64/submodules-demo/blob/main/docs/prompt-tutorial.md
+
+The local working directory will be:
+C:\Users\jinra\Desktop\nus-iss-ai\repos\workshop-day1
+
+The GitHub repository will be:
+https://github.com/gohyiheng/workshop-day1
+
+Create the working folder and associate the GitHub repository yourselves.
+For a new workspace, initialize Git with backend as the first branch, following
+Step 1 of the tutorial, and configure the remote with:
+git remote add origin https://github.com/gohyiheng/workshop-day1
+
+If the working folder or Git repository already exists, inspect its state and
+origin before continuing. Reuse the correct setup and preserve existing work.
+
+Use C:\Users\jinra\Desktop\nus-iss-ai\repos\workshop-day1 wherever the tutorial refers to its
+snip-demo project folder. Do not create a nested snip-demo folder. Replace every
+<REPO_URL> placeholder with https://github.com/gohyiheng/workshop-day1
+
+Responsibilities:
+- Backend Engineer: implement Step 1 on backend and establish the shared API
+  contract used by both clients.
+- Senior Frontend Developer: implement Step 2 on frontend against that contract.
+- Senior CLI Developer: implement Step 3 on cli against that contract.
+- Senior DevSecOps: coordinate the shared workspace and implement Steps 4–6:
+  the main superproject, submodules, generated bundle, build script, GitHub Actions,
+  and Docker release pipeline.
+
+Follow the tutorial's step order. Coordinate changes in this shared working
+directory so only one agent switches branches or changes repository state at a
+time. Commit, push, and verify each component before moving to the next step.
+Keep component files at their branch roots; let Git create the submodule folders
+in Step 4 rather than creating those folders in advance.
+
+Use each agent's configured persona while preserving the tutorial's API contract,
+branch names, file names, and architecture. Run the verification checks for every
+step. Report completed work, branches and commits, test results, and any blockers.
