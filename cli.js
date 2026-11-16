@@ -59,6 +59,9 @@ async function fetchApi(path, options) {
     throw new Error(`Could not reach the Snip API at ${API_BASE_URL}: ${error.message}`);
   }
 
+  if (options?.redirect === "manual" && response.status === 302) {
+    return { response, body: null };
+  }
   const body = await readJson(response);
   if (!response.ok) throw new Error(apiError(response, body));
   return { response, body };
