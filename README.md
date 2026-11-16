@@ -20,7 +20,7 @@ Use `--recurse-submodules`; a plain clone leaves the component directories
 unpopulated.
 
 ```sh
-git clone --recurse-submodules https://github.com/gohyiheng/workshop-day1.git
+git clone --branch main --recurse-submodules https://github.com/gohyiheng/workshop-day1.git
 ```
 
 If you already cloned without submodules, run:
@@ -56,3 +56,46 @@ git push
 Repeat with `frontend` or `cli` as appropriate. The `bundle` branch is generated
 release output; do not edit it by hand. Rebuild it with
 `node scripts/build-bundle.mjs` after component updates.
+
+## Release and verification
+
+The builder updates the source submodules to their branch tips, builds Angular,
+and copies the exact backend and CLI into `bundle`. It refuses dirty submodules,
+guards empty commits, and commits the generated release plus its pointers locally.
+Run it again to verify an unchanged release creates no commits. Add `--push` to
+publish `bundle` and then `main`. Configure your Git author before running it.
+
+```sh
+node scripts/build-bundle.mjs
+node scripts/smoke-test.mjs
+node scripts/build-bundle.mjs --push
+```
+
+The smoke check starts a temporary Bun server on a free port, verifies the built
+UI assets, API creation/listing/redirects and hit counts, and CLI add/list, then
+stops its server. Set `BUN_BIN` to a Bun executable path if needed on Windows.
+CLI redirect regression tests run with `node --test cli/cli.test.js`; they mock
+browser launching rather than opening a desktop browser.
+
+The hourly/manual **Build bundle** workflow runs on `main`. It validates the
+assembled release before pushing. Its token needs `contents: write` for branch
+updates and `actions: write` to dispatch image verification, because pushes made
+with `GITHUB_TOKEN` do not start another push workflow.
+
+**Build and push image** watches the `bundle` gitlink on `main` and its own workflow
+file, and also supports manual dispatch. It audits production dependencies,
+compares source files and rebuilt UI against the pinned bundle, builds and scans
+the image, and smoke-tests the container before publishing that same image to
+`ghcr.io/gohyiheng/workshop-day1:latest` and `:sha-<short-main-sha>`.
+High/critical audit or image findings block publication. GHCR packages may be
+private initially; this pipeline does not change package visibility.
+
+```sh
+cd bundle
+docker build -t snip .
+docker run --rm -p 3000:3000 snip
+```
+
+Docker must be installed to perform the container checks locally. The bundle
+also includes `railway.json` for Dockerfile-based deployment; deployment and
+account configuration are separate from generating the release.
