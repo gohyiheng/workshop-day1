@@ -27,11 +27,15 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "24"
-      - name: Verify source dependencies
+      - name: Install source dependencies
         working-directory: frontend
-        run: |
-          npm ci
-          npm audit --omit=dev --audit-level=high
+        run: npm ci
+      - name: Audit production dependencies
+        id: audit
+        # Collect container evidence too, but enforce all outcomes before login.
+        continue-on-error: true
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
       - name: Verify pinned bundle inputs
         run: |
           git submodule status
@@ -56,6 +60,8 @@ jobs:
           push: false
           tags: snip:verified
       - uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        id: scan
+        continue-on-error: true
         with:
           image-ref: snip:verified
           severity: HIGH,CRITICAL
@@ -71,6 +77,13 @@ jobs:
             docker logs snip-smoke
             docker rm -f snip-smoke
           fi
+      - name: Enforce security gates
+        env:
+          AUDIT_RESULT: ${{ steps.audit.outcome }}
+          IMAGE_SCAN_RESULT: ${{ steps.scan.outcome }}
+        run: |
+          test "$AUDIT_RESULT" = success
+          test "$IMAGE_SCAN_RESULT" = success
       - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           registry: ghcr.io
