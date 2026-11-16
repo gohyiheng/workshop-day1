@@ -1,0 +1,105 @@
+<main class="page">
+  <header class="hero">
+    <a class="brand" href="/" aria-label="Snip home">
+      <span class="brand-mark" aria-hidden="true">s</span>
+      <span>snip</span>
+    </a>
+    <p class="eyebrow">A little link magic</p>
+    <h1>Short links.<br /><span>Long story short.</span></h1>
+    <p class="intro">Turn any URL into a clean, shareable link.</p>
+  </header>
+
+  <section class="workspace" aria-label="Create and manage short links">
+    <form class="shorten-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label class="sr-only" for="url">Paste a URL to shorten</label>
+      <input
+        id="url"
+        type="url"
+        formControlName="url"
+        placeholder="https://your-very-long-link.com/..."
+        autocomplete="url"
+        inputmode="url"
+        [attr.aria-invalid]="form.controls.url.invalid && form.controls.url.touched"
+        [attr.aria-describedby]="
+          form.controls.url.touched && (form.controls.url.invalid || submitError())
+            ? 'url-hint url-error'
+            : 'url-hint'
+        "
+      />
+      <button type="submit" [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          <span class="spinner" aria-hidden="true"></span>
+          Shortening…
+        } @else {
+          Shorten link <span aria-hidden="true">↗</span>
+        }
+      </button>
+    </form>
+    <p id="url-hint" class="form-hint">Use a full HTTP or HTTPS address.</p>
+    @if (form.controls.url.touched && form.controls.url.hasError('required')) {
+      <p id="url-error" class="field-error" role="alert">Enter a URL to get started.</p>
+    } @else if (form.controls.url.touched && form.controls.url.hasError('httpUrl')) {
+      <p id="url-error" class="field-error" role="alert">Enter a valid HTTP or HTTPS URL.</p>
+    } @else if (submitError()) {
+      <p id="url-error" class="field-error" role="alert">{{ submitError() }}</p>
+    }
+
+    @if (createdLink(); as link) {
+      <div class="result-card" role="status" aria-live="polite">
+        <div>
+          <p class="result-label">Your short link is ready</p>
+          <a [href]="link.shortUrl" target="_blank" rel="noopener noreferrer">{{ link.shortUrl }}</a>
+        </div>
+        <span class="result-check" aria-hidden="true">✓</span>
+      </div>
+    }
+
+    <section class="links-card" aria-labelledby="links-heading">
+      <div class="card-heading">
+        <div>
+          <p class="eyebrow">Your collection</p>
+          <h2 id="links-heading">Recent links</h2>
+        </div>
+        <span class="link-count">{{ links().length }} {{ links().length === 1 ? 'link' : 'links' }}</span>
+      </div>
+
+      @if (isLoading()) {
+        <p class="state-message" role="status">Loading your links…</p>
+      } @else if (loadError()) {
+        <p class="state-message state-error" role="alert">{{ loadError() }}</p>
+      } @else if (links().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon" aria-hidden="true">↗</span>
+          <p>No links yet. Your next great share starts above.</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Short link</th>
+                <th scope="col">Original URL</th>
+                <th scope="col" class="hits-column">Hits</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (link of links(); track link.code) {
+                <tr>
+                  <td>
+                    <a class="short-link" [href]="link.shortUrl" target="_blank" rel="noopener noreferrer">
+                      {{ link.shortUrl }}
+                    </a>
+                  </td>
+                  <td><span class="original-url" [title]="link.url">{{ link.url }}</span></td>
+                  <td class="hits-column">{{ link.hits }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </section>
+
+  <footer>Made for links worth sharing.</footer>
+</main>
